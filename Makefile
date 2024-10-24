@@ -12,14 +12,23 @@ lint:
 	go fmt ./...
 	golangci-lint run
 
-build: darwin_arm64
+build: all
+all: build_mac build_win
+build_mac: darwin_arm64
+build_win: windows_amd64
 
-package: build
-	zip -j $(BUILD_PATH)/$(PRODUCT_NAME)_$(PRODUCT_VERSION)_darwin_arm64.zip ./build/darwin/arm64/*
+package: package_mac package_win
+package_mac: build_mac
+	zip -j $(BUILD_PATH)/$(PRODUCT_NAME)_$(PRODUCT_VERSION).darwin.zip ./build/darwin/arm64/*
 
-run: darwin_arm64 run_darwin
+package_win: build_win
+	zip -j $(BUILD_PATH)/$(PRODUCT_NAME)_$(PRODUCT_VERSION).windows.zip ./build/windows/amd64/*
 
-debug: darwin_arm64 debug_darwin
+run_mac: darwin_arm64 run_darwin
+run_win: windows_amd64 run_windows
+
+debug_mac: darwin_arm64 debug_darwin
+debug_win: windows_amd64 debug_windows
 
 unit_test:
 	go test -short $(LD_FLAGS) ./... -coverprofile=coverage.out
@@ -31,8 +40,18 @@ darwin_arm64:
 	env GOOS=darwin GOARCH=arm64 go build -o $(BUILD_PATH)/darwin/arm64/$(PRODUCT_NAME) $(LD_FLAGS)
 	cp -v $(EXTERNAL_PATH)/darwin/arm64/SimilarityCalculator $(BUILD_PATH)/darwin/arm64/
 
+windows_amd64:
+	env GOOS=windows GOARCH=amd64 go build -o $(BUILD_PATH)/windows/amd64/$(PRODUCT_NAME).exe $(LD_FLAGS)
+	cp -v $(EXTERNAL_PATH)/windows/amd64/SimilarityCalculator.exe $(BUILD_PATH)/windows/amd64/
+
+run_windows:
+	build/windows/amd64/cxsast_exporter --user $(SAST_EXPORT_USER) --pass $(SAST_EXPORT_PASS) --url http://localhost --export users,results,teams,projects --project-active-since 1
+
 run_darwin:
 	build/darwin/arm64/cxsast_exporter --user $(SAST_EXPORT_USER) --pass $(SAST_EXPORT_PASS) --url http://localhost --export users,results,teams,projects --project-active-since 1
+
+debug_windows:
+	build/windows/amd64/cxsast_exporter --user $(SAST_EXPORT_USER) --pass $(SAST_EXPORT_PASS) --url http://localhost --export users,results,teams,projects --project-active-since 10 --debug
 
 debug_darwin:
 	build/darwin/arm64/cxsast_exporter --user $(SAST_EXPORT_USER) --pass $(SAST_EXPORT_PASS) --url http://localhost --export users,results,teams,projects --project-active-since 10 --debug
