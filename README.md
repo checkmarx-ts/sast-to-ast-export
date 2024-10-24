@@ -30,7 +30,7 @@ Fetches SAST triaged results and exports as an encrypted package, which can then
 
 ### Prerequisites
 
-Microsoft Windows x64.
+Microsoft Windows x64 / Apple OSX
 
 SAST v9.3 or higher.
 
@@ -62,7 +62,7 @@ Refer to the project [Wiki](https://checkmarx.com/resource/documents/en/34965-68
 
 ## Similarity Calculator
 
-The exporter relies on a Windows binary for similarity calculation.
+The exporter relies on a binary for similarity calculation.
 This is internally built by Checkmarx and provided in the `external` folder for inclusion with the build. 
 
 ## Contributing
